@@ -18,7 +18,8 @@ export const App = () => {
   const onChange = (event) => {
     const { name, value } = event.target;
     setDataPhonebook({...dataPhonebook,[name]: value })
-   };
+  };
+  
     
   const onSubmit = (event) => {
     const { name, number, contacts} = dataPhonebook;
