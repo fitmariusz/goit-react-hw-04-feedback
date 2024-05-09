@@ -1,63 +1,53 @@
 import './App.css'
+import { Statistic } from "./Statistics/statistics";
+import { FeedbackOptions } from './FeedbackOptions/FeedbackOptions';
+import { Notification } from './Notification/Notyfication';
 import { useState } from "react";
-import { nanoid } from 'nanoid';
-import { ContactList } from './ContactsList/ContactsList';
-import { Form } from './Form/Form';
 import { Section } from './Section/Section';
 
-const INITCONTACTS = {
-  contacts: [],
-  filter: '',
-  name: '',
-  number:'',
-}
 
-export const App = () => {
-  const [dataPhonebook, setDataPhonebook] = useState(INITCONTACTS);
-
-  const onChange = (event) => {
-    const { name, value } = event.target;
-    setDataPhonebook({...dataPhonebook,[name]: value })
-  };
-  
-    
-  const onSubmit = (event) => {
-    const { name, number, contacts} = dataPhonebook;
-    event.preventDefault();
-    document.getElementById("nameContact").value = '';
-    document.getElementById("numberContact").value = '';
-
-const isExist = contacts.some(
-      contact => contact.name.toLowerCase() === name.trim().toLowerCase()
-    );
-    if (isExist) {
-      alert(`${name} is in contacts`);
-      return;
-    }
-
-    setDataPhonebook({
-      ...dataPhonebook,
-      contacts: [...contacts, { id: nanoid(), name, number }],
-      filter:'',
-      name: '',
-      number: ''
-    });
-  };
-
-  const onDelete = (contactId) => {
-    setDataPhonebook({
-      ...dataPhonebook,
-      contacts: dataPhonebook.contacts.filter(contact => contact.id !== contactId)
-    });
-  };
-    
-  return (
-    <>
-      <div className='divForm'> 
-      <Section title="Phonebook" children={<Form dataPhonebook={dataPhonebook} onSubmit={onSubmit} onChange={onChange}></Form>}></Section>
-        <Section title="Contacts" children={<ContactList dataPhonebook={dataPhonebook} onDelete={onDelete} onChange={onChange}></ContactList>}></Section>
-        </div>
-    </>
-  );
+const INITIAL_STATE = {
+  good: 0,
+  neutral: 0,
+  bad: 0,
 };
 
+
+export const App = () => {
+    const [data, setData] = useState({ ...INITIAL_STATE});
+    const [isFeedback, setIsFeedback] = useState(false);
+
+    const onClick = (evt) => {
+        setData(prevValue => {
+            if(isFeedback===false){setIsFeedback(true)}
+            return { ...prevValue, [evt.target.id]: prevValue[evt.target.id]+1}
+        })
+    }
+
+    const countTotalFeedback = () => {
+        return data.good+ data.neutral+ data.bad;
+    }
+    
+    const countPositiveFeedbackPercentage = () => {
+        return data.good >0 ? Math.round(data.good/countTotalFeedback() * 100) : 0;
+    }
+
+
+  return (
+      <>
+        <div>
+        <Section title="Please leave feedback" children={<FeedbackOptions options={Object.keys(data)} onClick={onClick} />} ></Section>
+        <Section title="Statistics" children={isFeedback === true ?
+            <Statistic
+                  valueBad={data.bad}
+                  valueGood={data.good}
+                  valueNeutral={data.neutral}
+                  valuePositive={countPositiveFeedbackPercentage()}
+                  valueTotal={countTotalFeedback()} />
+            :
+            <Notification message="There is no feedback"></Notification>}>
+        </Section>
+        </div>
+   </>
+  );
+};
